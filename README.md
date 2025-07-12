@@ -48,10 +48,10 @@
 
 ```bash
   project/
-    │
-    ├── index.html
-    ├── README.md 
-    ├── screenshot.png
+  │
+  ├── index.html              # मुख्य HTML फ़ाइल
+  ├── README.md               # यह विवरण फ़ाइल
+  ├── screenshot.png          # स्क्रीनशॉट (वैकल्पिक)
 ```
 
 ## ✅ भविष्य के सुधार (Future Enhancements)
