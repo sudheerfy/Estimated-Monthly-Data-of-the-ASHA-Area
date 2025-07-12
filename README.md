@@ -46,11 +46,13 @@
 
 ## 📁 प्रोजेक्ट संरचना (Project Structure)
 
-project/
-│
-├── index.html
-├── README.md 
-├── screenshot.png
+```bash
+  project/
+    │
+    ├── index.html
+    ├── README.md 
+    ├── screenshot.png
+```
 
 ## ✅ भविष्य के सुधार (Future Enhancements)
 
