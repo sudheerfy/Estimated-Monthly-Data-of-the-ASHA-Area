@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>आशा क्षेत्र का मासिक अनुमानित विवरण</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@100..900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f6f8;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      font-family: "Noto Sans Devanagari", sans-serif;
+      font-weight: 400;
+      font-style: normal;
+      color: #333;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      font-size: 1.75rem;
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: nowrap;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      flex: 1 1 auto;
+      min-width: 0;
+      padding: 10px 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      width: auto;
+    }
+
+    input[type="number"]:focus {
+      border-color: #1976d2;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    }
+
+    input.error {
+      border-color: #e53935 !important;
+      animation: shake 0.3s ease-in-out;
+    }
+
+    input.error:focus {
+      box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
+
+    .btn-primary {
+      background-color: #1976d2;
+      color: #fff;
+      padding: 10px 28px;
+      font-size: 16px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: #1565c0;
+    }
+
+    .table-responsive {
+      margin-top: 30px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 18px;
+    }
+
+    .table thead {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+    }
+
+    .table th,
+    .table td {
+      text-align: center;
+      padding: 12px 10px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .table th:first-child { width: 12%; }
+    .table th:nth-child(2) { width: 63%; }
+    .table th:last-child { width: 25%; }
+
+    .table tbody tr:nth-child(even) {
+      background-color: #f9fbfc;
+    }
+
+    .table tbody tr:hover {
+      background-color: #f1faff;
+    }
+
+    @media (max-width: 576px) {
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      .container {
+        padding: 20px 15px;
+      }
+
+      form {
+        flex-direction: column;
+      }
+
+      input[type="number"],
+      .btn-primary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>1.2 : आशा क्षेत्र का मासिक विवरण</h2>
+
+    <form onsubmit="event.preventDefault(); calculateIndicators();">
+      <input type="number" id="population" placeholder="कुल जनसंख्या लिखें: उदाहरण — 230 से 10000 तक"/>
+      <button type="submit" class="btn btn-primary">गणना करें</button>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-light">
+          <tr>
+            <th>क्रम सं.</th>
+            <th>विवरण</th>
+            <th>अनुमानित संख्या</th>
+          </tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('population');
+    const table = document.getElementById('resultTable');
+
+    window.onload = () => {
+      input.focus();
+    };
+
+    input.addEventListener("input", () => {
+      if (input.classList.contains("error") && input.value.trim() !== "") {
+        input.classList.remove("error");
+      }
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        if (input.value.trim() === "") {
+          input.classList.add("error");
+          input.focus();
+        } else {
+          calculateIndicators();
+        }
+      }
+    });
+
+    input.addEventListener("blur", () => {
+      input.classList.remove("error");
+    });
+
+    function roundSmart(value) {
+      const decimal = value - Math.floor(value);
+      return decimal >= 0.5 ? Math.ceil(value) : Math.floor(value);
+    }
+
+    function calculateIndicators() {
+      const pop = parseFloat(input.value);
+      input.classList.remove("error");
+      void input.offsetWidth;
+
+      if (isNaN(pop) || pop <= 0) {
+        input.classList.add("error");
+        input.focus();
+        return;
+      }
+
+      const eligibleCouples = (pop * 164) / 1000;
+      const regPregnant = ((pop * 26.1) / 1000) * 0.8625;
+      const ancThisMonth = (regPregnant * 44) / 100;
+      const fourANC = ((pop * 26.1) / 1000) / 12;
+      const highRisk = roundSmart((regPregnant * 10) / 100);
+
+      let severeAnemia = "—";
+      let ironSucrose = "—";
+      if (highRisk > 0) {
+        const anemiaCalc = roundSmart((regPregnant * 5.1) / 100);
+        if (anemiaCalc === 0) {
+          severeAnemia = "लगभग — 1";
+          ironSucrose = 1;
+        } else {
+          severeAnemia = "लगभग — " + anemiaCalc;
+          ironSucrose = anemiaCalc;
+        }
+      }
+
+      const instDelivery = ((pop * 26.1) / 1000) / 12;
+      const homeDelivery = "—";
+      const newborn = ((pop * 26.1) / 1000) / 12;
+
+      
+      let lowBirthWeight = (newborn * 20.2) / 100;
+      let sncuReferred = (newborn * 20.2) / 100;
+
+      lowBirthWeight = roundSmart(lowBirthWeight);
+      sncuReferred = roundSmart(sncuReferred);
+
+      const indicators = [
+        ["1", "कुल योग्य दम्पत्तियों की संख्या", roundSmart(eligibleCouples)],
+        ["2", "कुल पंजीकृत गर्भवती महिलाएं", roundSmart(regPregnant)],
+        ["3", "कुल पंजीकृत गर्भवती महिलाएं जिनकी ए एन सी इस माह में हुयी", roundSmart(ancThisMonth)],
+        ["4", "इस माह में कुल गर्भवती महिलाएं जिनकी 4 एएनसी हो गयी", roundSmart(fourANC)],
+        ["5", "कुल उच्च जोखिम गर्भवती महिलाएं", highRisk],
+        ["6", "कुल गंभीर एनीमिक गर्भवती महिलाएं", severeAnemia],
+        ["7", "कुल गंभीर एनीमिक गर्भवती महिलाएं जिन्हे आयरन सुक्रोज़ मिला", ironSucrose],
+        ["8", "कुल संस्थागत प्रसव", roundSmart(instDelivery)],
+        ["9", "घर पर हुये कुल प्रसव की संख्या", homeDelivery],
+        ["10", "कुल नवजात शिशु", roundSmart(newborn)],
+        ["11", "कुल कम वजन के जन्में बच्चे", roundSmart(newborn) >= 1 ? (lowBirthWeight === 0 ? "लगभग — 1" : lowBirthWeight) : "—"],
+        ["12", "कुल कम वजन के जन्में बच्चे जिन्हें SNCU/ एनबीएसयू रेफर किया गया", roundSmart(newborn) >= 1 ? (sncuReferred === 0 ? "1" : sncuReferred) : "—"]
+      ];
+
+      table.innerHTML = "";
+      indicators.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        table.appendChild(tr);
+      });
+    }
+  </script>
+</body>
+</html>
